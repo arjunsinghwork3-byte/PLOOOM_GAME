@@ -1,152 +1,113 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+document.addEventListener("DOMContentLoaded", () => {
 
-const startBtn = document.getElementById("startBtn");
-const overlay = document.getElementById("overlay");
-const rewardScreen = document.getElementById("rewardScreen");
+  const startScreen = document.getElementById("startScreen");
+  const rewardScreen = document.getElementById("rewardScreen");
+  const gameUI = document.getElementById("gameUI");
+  const startBtn = document.getElementById("startBtn");
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const scoreEl = document.getElementById("score");
 
-let gameRunning = false;
-let score = 0;
+  let score = 0;
+  let gameActive = false;
+  let balls = [];
 
-const eventLabels = [
-  "Caterers",
-  "Decorators",
-  "DJs",
-  "Musicians",
-  "AV Teams",
-  "Lighting",
-  "Venues"
-];
+  const labels = ["Caterers", "Decorators", "DJs", "Musicians", "Venues"];
 
-const player = {
-  x: canvas.width / 2 - 16,
-  y: canvas.height - 60,
-  size: 32,
-  speed: 5
-};
+  const player = {
+    x: 180,
+    y: 540,
+    width: 40,
+    height: 40,
+    speed: 6
+  };
 
-let objects = [];
-let spawnInterval;
-let gameLoopId;
-
-startBtn.onclick = () => {
-  overlay.style.display = "none";
-  startGame();
-};
-
-function startGame() {
-  score = 0;
-  objects = [];
-  gameRunning = true;
-  spawnInterval = setInterval(spawnObject, 1200);
-  gameLoop();
-}
-
-function spawnObject() {
-  const isEvent = Math.random() < 0.7;
-  objects.push({
-    x: Math.random() * (canvas.width - 40),
-    y: -40,
-    size: 40,
-    speed: 1.5 + Math.random(),
-    type: isEvent ? "event" : "chaos",
-    label: isEvent
-      ? eventLabels[Math.floor(Math.random() * eventLabels.length)]
-      : ""
-  });
-}
-
-function update() {
-  objects.forEach((obj, index) => {
-    obj.y += obj.speed;
-
-    if (collision(player, obj)) {
-      if (obj.type === "event") {
-        score += 10;
-        objects.splice(index, 1);
-        if (score >= 100) {
-          winGame();
-        }
-      } else {
-        endGame();
-      }
-    }
+  document.addEventListener("keydown", e => {
+    if (!gameActive) return;
+    if (e.key === "ArrowLeft") player.x -= player.speed;
+    if (e.key === "ArrowRight") player.x += player.speed;
+    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
   });
 
-  objects = objects.filter(obj => obj.y < canvas.height + 50);
-}
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#1f4fa3";
-  ctx.font = "14px Arial";
-  ctx.fillText(`Score: ${score}`, 10, 20);
-
-  drawPixelPlayer(player.x, player.y);
-
-  objects.forEach(obj => {
-    ctx.fillStyle = obj.type === "event" ? "orange" : "black";
-    ctx.beginPath();
-    ctx.arc(obj.x + obj.size / 2, obj.y + obj.size / 2, obj.size / 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (obj.type === "event") {
-      ctx.fillStyle = "white";
-      ctx.font = "10px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(obj.label, obj.x + obj.size / 2, obj.y + obj.size / 2 + 3);
-    }
-  });
-}
-
-function drawPixelPlayer(x, y) {
-  ctx.fillStyle = "#1f4fa3";
-  const pixel = 4;
-  const sprite = [
-    [0,1,1,1,0],
-    [1,1,1,1,1],
-    [0,1,1,1,0],
-    [1,0,1,0,1],
-    [1,0,1,0,1]
-  ];
-  sprite.forEach((row, r) => {
-    row.forEach((col, c) => {
-      if (col) ctx.fillRect(x + c * pixel, y + r * pixel, pixel, pixel);
+  function spawnBall() {
+    balls.push({
+      x: Math.random() * 320 + 20,
+      y: 0,
+      radius: 22,
+      text: labels[Math.floor(Math.random() * labels.length)],
+      speed: 1.2
     });
-  });
-}
+  }
 
-function gameLoop() {
-  if (!gameRunning) return;
-  update();
-  draw();
-  gameLoopId = requestAnimationFrame(gameLoop);
-}
+  function drawPlayer() {
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+  }
 
-function endGame() {
-  gameRunning = false;
-  clearInterval(spawnInterval);
-  overlay.style.display = "flex";
-  overlay.innerHTML = `<h1>GAME OVER</h1><p>Score: ${score}</p><button onclick="location.reload()">RESTART</button>`;
-}
+  function drawBalls() {
+    ctx.font = "10px Arial";
+    ctx.textAlign = "center";
+    balls.forEach(b => {
+      ctx.fillStyle = "#f97316";
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#000";
+      ctx.fillText(b.text, b.x, b.y + 3);
+    });
+  }
 
-function winGame() {
-  gameRunning = false;
-  clearInterval(spawnInterval);
-  rewardScreen.classList.remove("hidden");
-}
+  function updateBalls() {
+    balls.forEach(b => b.y += b.speed);
+    balls = balls.filter(b => b.y < canvas.height + 30);
+  }
 
-function collision(a, b) {
-  return (
-    a.x < b.x + b.size &&
-    a.x + a.size > b.x &&
-    a.y < b.y + b.size &&
-    a.y + a.size > b.y
-  );
-}
+  function checkCollisions() {
+    balls = balls.filter(b => {
+      const hit =
+        b.x > player.x &&
+        b.x < player.x + player.width &&
+        b.y > player.y &&
+        b.y < player.y + player.height;
 
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") player.x = Math.max(0, player.x - player.speed);
-  if (e.key === "ArrowRight") player.x = Math.min(canvas.width - player.size, player.x + player.speed);
+      if (hit) {
+        score += 10;
+        scoreEl.textContent = score;
+        if (score >= 100) endGame();
+        return false;
+      }
+      return true;
+    });
+  }
+
+  function gameLoop() {
+    if (!gameActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawBalls();
+    updateBalls();
+    checkCollisions();
+    requestAnimationFrame(gameLoop);
+  }
+
+  function startGame() {
+    score = 0;
+    balls = [];
+    gameActive = true;
+    scoreEl.textContent = score;
+    startScreen.classList.add("hidden");
+    rewardScreen.classList.add("hidden");
+    gameUI.classList.remove("hidden");
+    setInterval(() => gameActive && spawnBall(), 1500);
+    gameLoop();
+  }
+
+  function endGame() {
+    gameActive = false;
+    gameUI.classList.add("hidden");
+    rewardScreen.classList.remove("hidden");
+  }
+
+  startBtn.addEventListener("click", startGame);
+
 });
