@@ -2,32 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>PLOOMM Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ploomm Catch Game</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <div id="game-container">
-    <canvas id="gameCanvas" width="360" height="640"></canvas>
+  <div id="startScreen" class="screen">
+    <h1>Catch & Earn</h1>
+    <p>Catch vendors to unlock rewards on Ploomm</p>
+    <button id="startBtn">Start Game</button>
+  </div>
 
-    <div id="overlay">
-      <h1>PLOOMM GAME</h1>
-      <p>
-        Catch orange event partners to earn points.<br />
-        Avoid black chaos balls.<br /><br />
-        Reach <strong>100 points</strong> to unlock rewards.
-      </p>
-      <button id="startBtn">LET'S PLAY</button>
-    </div>
+  <div id="gameUI" class="hidden">
+    <div id="scoreBoard">Score: <span id="score">0</span></div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+  </div>
 
-    <div id="rewardScreen" class="hidden">
-      <h1>CONGRATULATIONS</h1>
-      <p>You’ve unlocked a reward</p>
-      <div class="coupon">20% OFF</div>
-      <p>on your first event booking on PLOOMM</p>
-      <button onclick="location.reload()">PLAY AGAIN</button>
-    </div>
+  <div id="rewardScreen" class="screen hidden">
+    <h1>Congratulations 🎉</h1>
+    <p>You’ve unlocked a <strong>20% discount</strong> on Ploomm</p>
+    <button onclick="window.location.href='https://ploomm.com'">
+      Avail Discount
+    </button>
   </div>
 
   <script src="game.js"></script>
