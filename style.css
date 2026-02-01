@@ -1,0 +1,40 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #020617;
+  color: white;
+  text-align: center;
+}
+
+.screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden { display: none; }
+
+.landing {
+  background: radial-gradient(circle, #0ea5e9, #020617);
+}
+
+button {
+  padding: 12px 26px;
+  font-size: 16px;
+  background: #f97316;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.hud {
+  padding: 10px;
+}
+
+canvas {
+  background: #020617;
+  border: 2px solid #f97316;
+}
